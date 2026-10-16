@@ -1,0 +1,57 @@
+name: pest-drone-sim
+
+services:
+  gazebo:
+    image: pest-drone-sim:dev
+    build:
+      context: .
+      args:
+        GAZEBO_PLUGIN_COMMIT: ${GAZEBO_PLUGIN_COMMIT:?Missing plugin commit}
+        ARDUPILOT_COMMIT: ${ARDUPILOT_COMMIT:?Missing ArduPilot commit}
+    init: true
+    command:
+      - gz
+      - sim
+      - -s
+      - -r
+      - -v4
+      - iris_runway.sdf
+
+  sitl:
+    image: pest-drone-sim:dev
+    init: true
+    network_mode: "service:gazebo"
+    depends_on:
+      gazebo:
+        condition: service_started
+    working_dir: /workspace
+    volumes:
+      - sim-data:/workspace
+    command:
+      - /opt/ardupilot/build/sitl/bin/arducopter
+      - --model
+      - JSON
+      - --defaults
+      - /opt/ardupilot/Tools/autotest/default_params/copter.parm,/opt/ardupilot/Tools/autotest/default_params/gazebo-iris.parm
+      - --home=-35.363261,149.165230,584,353
+
+  mavproxy:
+    image: pest-drone-sim:dev
+    init: true
+    profiles: ["tools"]
+    network_mode: "service:gazebo"
+    depends_on:
+      sitl:
+        condition: service_started
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    volumes:
+      - sim-data:/workspace
+    command:
+      - mavproxy.py
+      - --master=tcp:127.0.0.1:5760
+      - --retries=20
+
+volumes:
+  sim-data:

@@ -2,6 +2,8 @@
 
 Run ArduCopter and Gazebo Jetty together on a Windows x86-64 PC using Docker in WSL 2. The container includes an Iris quad-X reference airframe, a simulated GPS and compass, and an optional pair of time-of-flight (ToF) rangefinders. It runs ArduPilot's flight software on the host CPU. STM32H743 timing, board wiring, and physical sensor drivers require a hardware test.
 
+For the Lucid H7 and HGLRC M100-5883 baseline, follow the [GPS and compass development guide](docs/gps-compass-baseline.md). It starts with a fresh clone and covers simulator checks, USB bench checks, and the measurements to collect.
+
 ## 1. Prepare Windows and Docker
 
 If Docker already works in your Ubuntu WSL terminal, skip to step 2. Otherwise open PowerShell as Administrator and install Ubuntu:

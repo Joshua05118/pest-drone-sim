@@ -1,0 +1,22 @@
+FROM local/gazebo:jetty
+USER root
+ENV GZ_VERSION=jetty
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    build-essential cmake git rapidjson-dev libopencv-dev libgstreamer-plugins-base1.0-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 https://github.com/ArduPilot/ardupilot_gazebo.git /opt/bridge \
+    && cmake -S /opt/bridge -B /opt/bridge/build -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build /opt/bridge/build --target ArduPilotPlugin -j2
+RUN cmake --build /opt/bridge/build -j2
+RUN curl -fSL https://firmware.ardupilot.org/Copter/2026-11/2026-11-23-11%3A36/SITL_x86_64_linux_gnu/arducopter -o /usr/local/bin/arducopter \
+    && echo "7419d558cda0ba03fc4637a9af8b5990580faa9794acfb696ede5fb61c9c00d4  /usr/local/bin/arducopter" | sha256sum -c - \
+    && chmod +x /usr/local/bin/arducopter && arducopter --help >/dev/null
+ENV GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/bridge/build \
+    GZ_SIM_RESOURCE_PATH=/opt/bridge/models:/opt/bridge/worlds
+COPY add_range_sensors.py /opt/gazebo/
+RUN python3 /opt/gazebo/add_range_sensors.py
+COPY lucid-sitl.parm tof.parm /opt/gazebo/
+COPY run-sitl.sh /opt/gazebo/
+USER ubuntu
+ENTRYPOINT ["bash", "/opt/gazebo/run-sitl.sh"]
+CMD []

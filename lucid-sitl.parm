@@ -1,0 +1,7 @@
+# Iris quad-X reference airframe with one external navigation module.
+FRAME_CLASS 1
+FRAME_TYPE 1
+GPS2_TYPE 0
+COMPASS_USE2 0
+COMPASS_USE3 0
+INS_USE3 0
